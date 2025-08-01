@@ -5,55 +5,99 @@ import { connect } from "cloudflare:sockets";
 // How to generate your own UUID:
 // [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
 let userID = "86c50e3a-5b87-49dd-bd20-03c7f2735e40";
+// 添加需要直接使用 proxyip 的域名列表，支持从环境变量扩展
+let proxydomains = ["twitch.tv", "ttvnw.net"];
 
 const proxyIPs = [""];
-const cn_hostnames = [''];
-let CDNIP = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0073\u0067'
+const cn_hostnames = [""];
+let CDNIP =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0073\u0067";
 // http_ip
-let IP1 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d'
-let IP2 = '\u0063\u0069\u0073\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d'
-let IP3 = '\u0061\u0066\u0072\u0069\u0063\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d'
-let IP4 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0073\u0067'
-let IP5 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0061\u0074'
-let IP6 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u006d\u0074'
-let IP7 = '\u0071\u0061\u002e\u0076\u0069\u0073\u0061\u006d\u0069\u0064\u0064\u006c\u0065\u0065\u0061\u0073\u0074\u002e\u0063\u006f\u006d'
+let IP1 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d";
+let IP2 =
+  "\u0063\u0069\u0073\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d";
+let IP3 =
+  "\u0061\u0066\u0072\u0069\u0063\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d";
+let IP4 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0073\u0067";
+let IP5 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0061\u0074";
+let IP6 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u006d\u0074";
+let IP7 =
+  "\u0071\u0061\u002e\u0076\u0069\u0073\u0061\u006d\u0069\u0064\u0064\u006c\u0065\u0065\u0061\u0073\u0074\u002e\u0063\u006f\u006d";
 
 // https_ip
-let IP8 = '\u0075\u0073\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d'
-let IP9 = '\u006d\u0079\u0061\u006e\u006d\u0061\u0072\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d'
-let IP10 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0074\u0077'
-let IP11 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0063\u0068'
-let IP12 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0062\u0072'
-let IP13 = '\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0073\u006f\u0075\u0074\u0068\u0065\u0061\u0073\u0074\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0063\u006f\u006d'
+let IP8 =
+  "\u0075\u0073\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d";
+let IP9 =
+  "\u006d\u0079\u0061\u006e\u006d\u0061\u0072\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d";
+let IP10 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0074\u0077";
+let IP11 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0063\u0068";
+let IP12 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d\u002e\u0062\u0072";
+let IP13 =
+  "\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0073\u006f\u0075\u0074\u0068\u0065\u0061\u0073\u0074\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0063\u006f\u006d";
 
 // http_port
-let PT1 = '80'
-let PT2 = '8080'
-let PT3 = '8880'
-let PT4 = '2052'
-let PT5 = '2082'
-let PT6 = '2086'
-let PT7 = '2095'
+let PT1 = "80";
+let PT2 = "8080";
+let PT3 = "8880";
+let PT4 = "2052";
+let PT5 = "2082";
+let PT6 = "2086";
+let PT7 = "2095";
 
 // https_port
-let PT8 = '443'
-let PT9 = '8443'
-let PT10 = '2053'
-let PT11 = '2083'
-let PT12 = '2087'
-let PT13 = '2096'
+let PT8 = "443";
+let PT9 = "8443";
+let PT10 = "2053";
+let PT11 = "2083";
+let PT12 = "2087";
+let PT13 = "2096";
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
-let proxyPort = proxyIP.match(/:(\d+)$/) ? proxyIP.match(/:(\d+)$/)[1] : '443';
+let proxyPort = proxyIP.match(/:(\d+)$/) ? proxyIP.match(/:(\d+)$/)[1] : "443";
 const dohURL = "https://cloudflare-dns.com/dns-query";
 if (!isValidUUID(userID)) {
   throw new Error("uuid is not valid");
 }
 
+// 检查域名是否匹配，包括子域名
+function isDomainMatch(hostname, pattern) {
+  // 处理 hostname 为 IP 地址的情况
+  if (/^[\d.:]+$/.test(hostname)) {
+    return false;
+  }
+
+  // 将域名按点分割成数组
+  const hostParts = hostname.split(".");
+  const patternParts = pattern.split(".");
+
+  // 如果主域名部分比匹配模式短，则不可能匹配
+  if (hostParts.length < patternParts.length) {
+    return false;
+  }
+
+  // 从后向前匹配每个部分
+  for (let i = 1; i <= patternParts.length; i++) {
+    if (
+      hostParts[hostParts.length - i] !== patternParts[patternParts.length - i]
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export default {
   /**
    * @param {any} request
-   * @param {{uuid: string, proxyip: string, cdnip: string, ip1: string, ip2: string, ip3: string, ip4: string, ip5: string, ip6: string, ip7: string, ip8: string, ip9: string, ip10: string, ip11: string, ip12: string, ip13: string, pt1: string, pt2: string, pt3: string, pt4: string, pt5: string, pt6: string, pt7: string, pt8: string, pt9: string, pt10: string, pt11: string, pt12: string, pt13: string}} env
+   * @param {{uuid: string, proxyip: string, cdnip: string, ip1: string, ip2: string, ip3: string, ip4: string, ip5: string, ip6: string, ip7: string, ip8: string, ip9: string, ip10: string, ip11: string, ip12: string, ip13: string, pt1: string, pt2: string, pt3: string, pt4: string, pt5: string, pt6: string, pt7: string, pt8: string, pt9: string, pt10: string, pt11: string, pt12: string, pt13: string, proxydomains: string}} env
    * @param {any} ctx
    * @returns {Promise<Response>}
    */
@@ -61,183 +105,193 @@ export default {
     try {
       const { proxyip } = env;
       userID = env.uuid || userID;
-			if (proxyip) {
-				if (proxyip.includes(']:')) {
-					let lastColonIndex = proxyip.lastIndexOf(':');
-					proxyPort = proxyip.slice(lastColonIndex + 1);
-					proxyIP = proxyip.slice(0, lastColonIndex);
-					
-				} else if (!proxyip.includes(']:') && !proxyip.includes(']')) {
-					[proxyIP, proxyPort = '443'] = proxyip.split(':');
-				} else {
-					proxyPort = '443';
-					proxyIP = proxyip;
-				}				
-			} else {
-				if (proxyIP.includes(']:')) {
-					let lastColonIndex = proxyIP.lastIndexOf(':');
-					proxyPort = proxyIP.slice(lastColonIndex + 1);
-					proxyIP = proxyIP.slice(0, lastColonIndex);	
-				} else {
-					const match = proxyIP.match(/^(.*?)(?::(\d+))?$/);
-					proxyIP = match[1];
-					let proxyPort = match[2] || '443';
-					console.log("IP:", proxyIP, "Port:", proxyPort);
-				}
-			}
-			console.log('ProxyIP:', proxyIP);
-			console.log('ProxyPort:', proxyPort);
+      if (proxyip) {
+        if (proxyip.includes("]:")) {
+          let lastColonIndex = proxyip.lastIndexOf(":");
+          proxyPort = proxyip.slice(lastColonIndex + 1);
+          proxyIP = proxyip.slice(0, lastColonIndex);
+        } else if (!proxyip.includes("]:") && !proxyip.includes("]")) {
+          [proxyIP, proxyPort = "443"] = proxyip.split(":");
+        } else {
+          proxyPort = "443";
+          proxyIP = proxyip;
+        }
+      } else {
+        if (proxyIP.includes("]:")) {
+          let lastColonIndex = proxyIP.lastIndexOf(":");
+          proxyPort = proxyIP.slice(lastColonIndex + 1);
+          proxyIP = proxyIP.slice(0, lastColonIndex);
+        } else {
+          const match = proxyIP.match(/^(.*?)(?::(\d+))?$/);
+          proxyIP = match[1];
+          let proxyPort = match[2] || "443";
+          console.log("IP:", proxyIP, "Port:", proxyPort);
+        }
+      }
+      console.log("ProxyIP:", proxyIP);
+      console.log("ProxyPort:", proxyPort);
       CDNIP = env.cdnip || CDNIP;
-	  IP1 = env.ip1 || IP1;
-	  IP2 = env.ip2 || IP2;
-	  IP3 = env.ip3 || IP3;
-	  IP4 = env.ip4 || IP4;
-	  IP5 = env.ip5 || IP5;
-	  IP6 = env.ip6 || IP6;
-	  IP7 = env.ip7 || IP7;
-	  IP8 = env.ip8 || IP8;
-	  IP9 = env.ip9 || IP9;
-	  IP10 = env.ip10 || IP10;
-	  IP11 = env.ip11 || IP11;
-	  IP12 = env.ip12 || IP12;
-	  IP13 = env.ip13 || IP13;
-	  PT1 = env.pt1 || PT1;
-	  PT2 = env.pt2 || PT2;
-	  PT3 = env.pt3 || PT3;
-	  PT4 = env.pt4 || PT4;
-	  PT5 = env.pt5 || PT5;
-	  PT6 = env.pt6 || PT6;
-	  PT7 = env.pt7 || PT7;
-	  PT8 = env.pt8 || PT8;
-	  PT9 = env.pt9 || PT9;
-	  PT10 = env.pt10 || PT10;
-	  PT11 = env.pt11 || PT11;
-	  PT12 = env.pt12 || PT12;
-	  PT13 = env.pt13 || PT13;
+      IP1 = env.ip1 || IP1;
+      IP2 = env.ip2 || IP2;
+      IP3 = env.ip3 || IP3;
+      IP4 = env.ip4 || IP4;
+      IP5 = env.ip5 || IP5;
+      IP6 = env.ip6 || IP6;
+      IP7 = env.ip7 || IP7;
+      IP8 = env.ip8 || IP8;
+      IP9 = env.ip9 || IP9;
+      IP10 = env.ip10 || IP10;
+      IP11 = env.ip11 || IP11;
+      IP12 = env.ip12 || IP12;
+      IP13 = env.ip13 || IP13;
+      PT1 = env.pt1 || PT1;
+      PT2 = env.pt2 || PT2;
+      PT3 = env.pt3 || PT3;
+      PT4 = env.pt4 || PT4;
+      PT5 = env.pt5 || PT5;
+      PT6 = env.pt6 || PT6;
+      PT7 = env.pt7 || PT7;
+      PT8 = env.pt8 || PT8;
+      PT9 = env.pt9 || PT9;
+      PT10 = env.pt10 || PT10;
+      PT11 = env.pt11 || PT11;
+      PT12 = env.pt12 || PT12;
+      PT13 = env.pt13 || PT13;
       const upgradeHeader = request.headers.get("Upgrade");
       const url = new URL(request.url);
       if (!upgradeHeader || upgradeHeader !== "websocket") {
         const url = new URL(request.url);
         switch (url.pathname) {
           case `/${userID}`: {
-            const \u0076\u006c\u0065\u0073\u0073Config = get\u0076\u006c\u0065\u0073\u0073Config(userID, request.headers.get("Host"));
-            return new Response(`${\u0076\u006c\u0065\u0073\u0073Config}`, {
+            const vlessConfig = getvlessConfig(
+              userID,
+              request.headers.get("Host")
+            );
+            return new Response(`${vlessConfig}`, {
               status: 200,
               headers: {
                 "Content-Type": "text/html;charset=utf-8",
               },
             });
           }
-		  case `/${userID}/ty`: {
-			const tyConfig = gettyConfig(userID, request.headers.get('Host'));
-			return new Response(`${tyConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/cl`: {
-			const clConfig = getclConfig(userID, request.headers.get('Host'));
-			return new Response(`${clConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/sb`: {
-			const sbConfig = getsbConfig(userID, request.headers.get('Host'));
-			return new Response(`${sbConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/pty`: {
-			const ptyConfig = getptyConfig(userID, request.headers.get('Host'));
-			return new Response(`${ptyConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/pcl`: {
-			const pclConfig = getpclConfig(userID, request.headers.get('Host'));
-			return new Response(`${pclConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "text/plain;charset=utf-8",
-				}
-			});
-		}
-		case `/${userID}/psb`: {
-			const psbConfig = getpsbConfig(userID, request.headers.get('Host'));
-			return new Response(`${psbConfig}`, {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json;charset=utf-8",
-				}
-			});
-		}
-          default:
-            // return new Response('Not found', { status: 404 });
-            // For any other path, reverse proxy to 'ramdom website' and return the original response, caching it in the process
-            if (cn_hostnames.includes('')) {
-            return new Response(JSON.stringify(request.cf, null, 4), {
+          case `/${userID}/ty`: {
+            const tyConfig = gettyConfig(userID, request.headers.get("Host"));
+            return new Response(`${tyConfig}`, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+              },
+            });
+          }
+          case `/${userID}/cl`: {
+            const clConfig = getclConfig(userID, request.headers.get("Host"));
+            return new Response(`${clConfig}`, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+              },
+            });
+          }
+          case `/${userID}/sb`: {
+            const sbConfig = getsbConfig(userID, request.headers.get("Host"));
+            return new Response(`${sbConfig}`, {
               status: 200,
               headers: {
                 "Content-Type": "application/json;charset=utf-8",
               },
             });
+          }
+          case `/${userID}/pty`: {
+            const ptyConfig = getptyConfig(userID, request.headers.get("Host"));
+            return new Response(`${ptyConfig}`, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+              },
+            });
+          }
+          case `/${userID}/pcl`: {
+            const pclConfig = getpclConfig(userID, request.headers.get("Host"));
+            return new Response(`${pclConfig}`, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+              },
+            });
+          }
+          case `/${userID}/psb`: {
+            const psbConfig = getpsbConfig(userID, request.headers.get("Host"));
+            return new Response(`${psbConfig}`, {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json;charset=utf-8",
+              },
+            });
+          }
+          default:
+            // return new Response('Not found', { status: 404 });
+            // For any other path, reverse proxy to 'ramdom website' and return the original response, caching it in the process
+            if (cn_hostnames.includes("")) {
+              return new Response(JSON.stringify(request.cf, null, 4), {
+                status: 200,
+                headers: {
+                  "Content-Type": "application/json;charset=utf-8",
+                },
+              });
             }
-            const randomHostname = cn_hostnames[Math.floor(Math.random() * cn_hostnames.length)];
+            const randomHostname =
+              cn_hostnames[Math.floor(Math.random() * cn_hostnames.length)];
             const newHeaders = new Headers(request.headers);
             newHeaders.set("cf-connecting-ip", "1.2.3.4");
             newHeaders.set("x-forwarded-for", "1.2.3.4");
             newHeaders.set("x-real-ip", "1.2.3.4");
-            newHeaders.set("referer", "https://www.google.com/search?q=edtunnel");
+            newHeaders.set(
+              "referer",
+              "https://www.google.com/search?q=edtunnel"
+            );
             // Use fetch to proxy the request to 15 different domains
-            const proxyUrl = "https://" + randomHostname + url.pathname + url.search;
+            const proxyUrl =
+              "https://" + randomHostname + url.pathname + url.search;
             let modifiedRequest = new Request(proxyUrl, {
               method: request.method,
               headers: newHeaders,
               body: request.body,
               redirect: "manual",
             });
-            const proxyResponse = await fetch(modifiedRequest, { redirect: "manual" });
+            const proxyResponse = await fetch(modifiedRequest, {
+              redirect: "manual",
+            });
             // Check for 302 or 301 redirect status and return an error response
             if ([301, 302].includes(proxyResponse.status)) {
-              return new Response(`Redirects to ${randomHostname} are not allowed.`, {
-                status: 403,
-                statusText: "Forbidden",
-              });
+              return new Response(
+                `Redirects to ${randomHostname} are not allowed.`,
+                {
+                  status: 403,
+                  statusText: "Forbidden",
+                }
+              );
             }
             // Return the response from the proxy server
             return proxyResponse;
         }
       } else {
-			if(url.pathname.includes('/pyip='))
-			{
-				const tmp_ip=url.pathname.split("=")[1];
-				if(isValidIP(tmp_ip))
-				{
-					proxyIP=tmp_ip;
-					if (proxyIP.includes(']:')) {
-						let lastColonIndex = proxyIP.lastIndexOf(':');
-						proxyPort = proxyIP.slice(lastColonIndex + 1);
-						proxyIP = proxyIP.slice(0, lastColonIndex);	
-					} else if (!proxyIP.includes(']:') && !proxyIP.includes(']')) {
-						[proxyIP, proxyPort = '443'] = proxyIP.split(':');
-					} else {
-						proxyPort = '443';
-					}
-				}	
-			}
-        return await \u0076\u006c\u0065\u0073\u0073OverWSHandler(request);
-		}
+        if (url.pathname.includes("/pyip=")) {
+          const tmp_ip = url.pathname.split("=")[1];
+          if (isValidIP(tmp_ip)) {
+            proxyIP = tmp_ip;
+            if (proxyIP.includes("]:")) {
+              let lastColonIndex = proxyIP.lastIndexOf(":");
+              proxyPort = proxyIP.slice(lastColonIndex + 1);
+              proxyIP = proxyIP.slice(0, lastColonIndex);
+            } else if (!proxyIP.includes("]:") && !proxyIP.includes("]")) {
+              [proxyIP, proxyPort = "443"] = proxyIP.split(":");
+            } else {
+              proxyPort = "443";
+            }
+          }
+        }
+        return await vlessOverWSHandler(request);
+      }
     } catch (err) {
       /** @type {Error} */ let e = err;
       return new Response(e.toString());
@@ -246,15 +300,15 @@ export default {
 };
 
 function isValidIP(ip) {
-    var reg = /^[\s\S]*$/;
-    return reg.test(ip);
+  var reg = /^[\s\S]*$/;
+  return reg.test(ip);
 }
 
 /**
  *
  * @param {any} request
  */
-async function \u0076\u006c\u0065\u0073\u0073OverWSHandler(request) {
+async function vlessOverWSHandler(request) {
   /** @type {any} */
   // @ts-ignore
   const webSocketPair = new WebSocketPair();
@@ -264,12 +318,19 @@ async function \u0076\u006c\u0065\u0073\u0073OverWSHandler(request) {
 
   let address = "";
   let portWithRandomLog = "";
-  const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
+  const log = (
+    /** @type {string} */ info,
+    /** @type {string | undefined} */ event
+  ) => {
     console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
   };
   const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
 
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
+  const readableWebSocketStream = makeReadableWebSocketStream(
+    webSocket,
+    earlyDataHeader,
+    log
+  );
 
   /** @type {{ value: any | null }} */
   let remoteSocketWapper = {
@@ -293,8 +354,6 @@ async function \u0076\u006c\u0065\u0073\u0073OverWSHandler(request) {
             return;
           }
 
-
-
           const {
             hasError,
             message,
@@ -305,7 +364,9 @@ async function \u0076\u006c\u0065\u0073\u0073OverWSHandler(request) {
             isUDP,
           } = await processcloudflareHeader(chunk, userID);
           address = addressRemote;
-          portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
+          portWithRandomLog = `${portRemote}--${Math.random()} ${
+            isUDP ? "udp " : "tcp "
+          } `;
           if (hasError) {
             // controller.error(message);
             throw new Error(message); // cf seems has bug, controller.error will not end stream
@@ -323,12 +384,19 @@ async function \u0076\u006c\u0065\u0073\u0073OverWSHandler(request) {
             }
           }
           // ["version", "附加信息长度 N"]
-          const cloudflareResponseHeader = new Uint8Array([cloudflareVersion[0], 0]);
+          const cloudflareResponseHeader = new Uint8Array([
+            cloudflareVersion[0],
+            0,
+          ]);
           const rawClientData = chunk.slice(rawDataIndex);
 
           // TODO: support udp here when cf runtime has udp support
           if (isDns) {
-            const { write } = await handleUDPOutBound(webSocket, cloudflareResponseHeader, log);
+            const { write } = await handleUDPOutBound(
+              webSocket,
+              cloudflareResponseHeader,
+              log
+            );
             udpStreamWrite = write;
             udpStreamWrite(rawClientData);
             return;
@@ -375,7 +443,9 @@ async function checkUuidInApiResponse(targetUuid) {
     if (!apiResponse) {
       return false;
     }
-    const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
+    const isUuidInResponse = apiResponse.users.some(
+      (user) => user.uuid === targetUuid
+    );
     return isUuidInResponse;
   } catch (error) {
     console.error("Error:", error);
@@ -384,8 +454,8 @@ async function checkUuidInApiResponse(targetUuid) {
 }
 
 async function getApiResponse() {
-	return { users: [] };
-  }
+  return { users: [] };
+}
 /**
  * Handles outbound TCP connections.
  *
@@ -408,8 +478,21 @@ async function handleTCPOutBound(
   log
 ) {
   async function connectAndWrite(address, port) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
-	/** @type {any} */
+    if (
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+        address
+      )
+    )
+      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    /** @type {any} */
+
+    const shouldUseProxyIP = proxydomains.some((domain) =>
+      isDomainMatch(address, domain)
+    );
+    if (shouldUseProxyIP) {
+      address = proxyIP;
+    }
+
     const tcpSocket = connect({
       hostname: address,
       port: port,
@@ -424,7 +507,10 @@ async function handleTCPOutBound(
 
   // if the cf connect tcp socket have no incoming data, we retry to redirect ip
   async function retry() {
-    const tcpSocket = await connectAndWrite(proxyIP || addressRemote, proxyPort || portRemote);
+    const tcpSocket = await connectAndWrite(
+      proxyIP || addressRemote,
+      proxyPort || portRemote
+    );
     // no matter retry success or not, close websocket
     tcpSocket.closed
       .catch((error) => {
@@ -531,9 +617,15 @@ async function processcloudflareHeader(cloudflareBuffer, userID) {
   const uuids = userID.includes(",") ? userID.split(",") : [userID];
 
   const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
-  isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
+  isValidUser = uuids.some(
+    (userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim()
+  );
 
-  console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
+  console.log(
+    `checkUuidInApi: ${await checkUuidInApiResponse(
+      slicedBufferString
+    )}, userID: ${slicedBufferString}`
+  );
 
   if (!isValidUser) {
     return {
@@ -545,7 +637,9 @@ async function processcloudflareHeader(cloudflareBuffer, userID) {
   const optLength = new Uint8Array(cloudflareBuffer.slice(17, 18))[0];
   //skip opt for now
 
-  const command = new Uint8Array(cloudflareBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
+  const command = new Uint8Array(
+    cloudflareBuffer.slice(18 + optLength, 18 + optLength + 1)
+  )[0];
 
   // 0x01 TCP
   // 0x02 UDP
@@ -565,7 +659,9 @@ async function processcloudflareHeader(cloudflareBuffer, userID) {
   const portRemote = new DataView(portBuffer).getUint16(0);
 
   let addressIndex = portIndex + 2;
-  const addressBuffer = new Uint8Array(cloudflareBuffer.slice(addressIndex, addressIndex + 1));
+  const addressBuffer = new Uint8Array(
+    cloudflareBuffer.slice(addressIndex, addressIndex + 1)
+  );
 
   // 1--> ipv4  addressLength =4
   // 2--> domain name addressLength=addressBuffer[1]
@@ -577,16 +673,33 @@ async function processcloudflareHeader(cloudflareBuffer, userID) {
   switch (addressType) {
     case 1:
       addressLength = 4;
-      addressValue = new Uint8Array(cloudflareBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
+      addressValue = new Uint8Array(
+        cloudflareBuffer.slice(
+          addressValueIndex,
+          addressValueIndex + addressLength
+        )
+      ).join(".");
       break;
     case 2:
-      addressLength = new Uint8Array(cloudflareBuffer.slice(addressValueIndex, addressValueIndex + 1))[0];
+      addressLength = new Uint8Array(
+        cloudflareBuffer.slice(addressValueIndex, addressValueIndex + 1)
+      )[0];
       addressValueIndex += 1;
-      addressValue = new TextDecoder().decode(cloudflareBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
+      addressValue = new TextDecoder().decode(
+        cloudflareBuffer.slice(
+          addressValueIndex,
+          addressValueIndex + addressLength
+        )
+      );
       break;
     case 3:
       addressLength = 16;
-      const dataView = new DataView(cloudflareBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
+      const dataView = new DataView(
+        cloudflareBuffer.slice(
+          addressValueIndex,
+          addressValueIndex + addressLength
+        )
+      );
       // 2001:0db8:85a3:0000:0000:8a2e:0370:7334
       const ipv6 = [];
       for (let i = 0; i < 8; i++) {
@@ -627,7 +740,13 @@ async function processcloudflareHeader(cloudflareBuffer, userID) {
  * @param {(() => Promise<void>) | null} retry
  * @param {*} log
  */
-async function remoteSocketToWS(remoteSocket, webSocket, cloudflareResponseHeader, retry, log) {
+async function remoteSocketToWS(
+  remoteSocket,
+  webSocket,
+  cloudflareResponseHeader,
+  retry,
+  log
+) {
   // remote--> ws
   let remoteChunkCount = 0;
   let chunks = [];
@@ -650,7 +769,9 @@ async function remoteSocketToWS(remoteSocket, webSocket, cloudflareResponseHeade
             controller.error("webSocket.readyState is not open, maybe close");
           }
           if (cloudflareHeader) {
-            webSocket.send(await new Blob([cloudflareHeader, chunk]).arrayBuffer());
+            webSocket.send(
+              await new Blob([cloudflareHeader, chunk]).arrayBuffer()
+            );
             cloudflareHeader = null;
           } else {
             // seems no need rate limit this, CF seems fix this??..
@@ -662,7 +783,9 @@ async function remoteSocketToWS(remoteSocket, webSocket, cloudflareResponseHeade
           }
         },
         close() {
-          log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
+          log(
+            `remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`
+          );
           // safeCloseWebSocket(webSocket); // no need server close websocket frist for some case will casue HTTP ERR_CONTENT_LENGTH_MISMATCH issue, client will send close event anyway.
         },
         abort(reason) {
@@ -709,7 +832,8 @@ function base64ToArrayBuffer(base64Str) {
  * @param {string} uuid
  */
 function isValidUUID(uuid) {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
 
@@ -721,7 +845,10 @@ const WS_READY_STATE_CLOSING = 2;
  */
 function safeCloseWebSocket(socket) {
   try {
-    if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
+    if (
+      socket.readyState === WS_READY_STATE_OPEN ||
+      socket.readyState === WS_READY_STATE_CLOSING
+    ) {
       socket.close();
     }
   } catch (error) {
@@ -764,7 +891,7 @@ function stringify(arr, offset = 0) {
   }
   return uuid;
 }
- 
+
 /**
  *
  * @param {any} webSocket
@@ -781,7 +908,9 @@ async function handleUDPOutBound(webSocket, cloudflareResponseHeader, log) {
       for (let index = 0; index < chunk.byteLength; ) {
         const lengthBuffer = chunk.slice(index, index + 2);
         const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
-        const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
+        const udpData = new Uint8Array(
+          chunk.slice(index + 2, index + 2 + udpPakcetLength)
+        );
         index = index + 2 + udpPakcetLength;
         controller.enqueue(udpData);
       }
@@ -807,20 +936,31 @@ async function handleUDPOutBound(webSocket, cloudflareResponseHeader, log) {
           const dnsQueryResult = await resp.arrayBuffer();
           const udpSize = dnsQueryResult.byteLength;
           // console.log([...new Uint8Array(dnsQueryResult)].map((x) => x.toString(16)));
-          const udpSizeBuffer = new Uint8Array([(udpSize >> 8) & 0xff, udpSize & 0xff]);
+          const udpSizeBuffer = new Uint8Array([
+            (udpSize >> 8) & 0xff,
+            udpSize & 0xff,
+          ]);
           if (webSocket.readyState === WS_READY_STATE_OPEN) {
             log(`doh success and dns message length is ${udpSize}`);
             if (iscloudflareHeaderSent) {
-              webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+              webSocket.send(
+                await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer()
+              );
             } else {
-              webSocket.send(await new Blob([cloudflareResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+              webSocket.send(
+                await new Blob([
+                  cloudflareResponseHeader,
+                  udpSizeBuffer,
+                  dnsQueryResult,
+                ]).arrayBuffer()
+              );
               iscloudflareHeaderSent = true;
             }
           }
         },
       })
     )
- 
+
     .catch((error) => {
       log("dns udp has error" + error);
     });
@@ -844,24 +984,26 @@ async function handleUDPOutBound(webSocket, cloudflareResponseHeader, log) {
  * @param {string | null} hostName
  * @returns {string}
  */
-function get\u0076\u006c\u0065\u0073\u0073Config(userID, hostName) {
-  const w\u0076\u006c\u0065\u0073\u0073ws = `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${CDNIP}:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#${hostName}`;
-  const p\u0076\u006c\u0065\u0073\u0073wstls = `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${CDNIP}:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2560#${hostName}`;
-  const note = `甬哥博客地址：https://ygkkk.blogspot.com\n甬哥YouTube频道：https://www.youtube.com/@ygkkk\n甬哥TG电报群组：https://t.me/ygkkktg\n甬哥TG电报频道：https://t.me/ygkkktgpd\n\nProxyIP全局运行中：${proxyIP}:${proxyPort}`;
-  const ty = `https://${hostName}/${userID}/ty`
-  const cl = `https://${hostName}/${userID}/cl`
-  const sb = `https://${hostName}/${userID}/sb`
-  const pty = `https://${hostName}/${userID}/pty`
-  const pcl = `https://${hostName}/${userID}/pcl`
-  const psb = `https://${hostName}/${userID}/psb`
+function getvlessConfig(userID, hostName) {
+  const wvlessws = `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${CDNIP}:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#${hostName}`;
+  const pvlesswstls = `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${CDNIP}:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2560#${hostName}`;
+  const note = `阿杰鲁博客地址：https://ajie.lu\n阿杰鲁YouTube频道：https://www.youtube.com/@zaunist\n阿杰鲁TG电报群组：https://t.me/zaunist\n\nProxyIP全局运行中：${proxyIP}:${proxyPort}`;
+  const ty = `https://${hostName}/${userID}/ty`;
+  const cl = `https://${hostName}/${userID}/cl`;
+  const sb = `https://${hostName}/${userID}/sb`;
+  const pty = `https://${hostName}/${userID}/pty`;
+  const pcl = `https://${hostName}/${userID}/pcl`;
+  const psb = `https://${hostName}/${userID}/psb`;
 
-  const wk\u0076\u006c\u0065\u0073\u0073share = btoa(`\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP1}:${PT1}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V1_${IP1}_${PT1}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP2}:${PT2}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V2_${IP2}_${PT2}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP3}:${PT3}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V3_${IP3}_${PT3}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP4}:${PT4}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V4_${IP4}_${PT4}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP5}:${PT5}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V5_${IP5}_${PT5}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP6}:${PT6}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V6_${IP6}_${PT6}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP7}:${PT7}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V7_${IP7}_${PT7}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`);
+  const wkvlessshare = btoa(
+    `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP1}:${PT1}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V1_${IP1}_${PT1}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP2}:${PT2}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V2_${IP2}_${PT2}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP3}:${PT3}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V3_${IP3}_${PT3}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP4}:${PT4}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V4_${IP4}_${PT4}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP5}:${PT5}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V5_${IP5}_${PT5}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP6}:${PT6}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V6_${IP6}_${PT6}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP7}:${PT7}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V7_${IP7}_${PT7}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`
+  );
 
+  const pgvlessshare = btoa(
+    `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`
+  );
 
-  const pg\u0076\u006c\u0065\u0073\u0073share = btoa(`\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`);	
-
-	
-  const noteshow = note.replace(/\n/g, '<br>');
+  const noteshow = note.replace(/\n/g, "<br>");
   const displayHtml = `
 <head>
 <meta charset="UTF-8">
@@ -890,8 +1032,8 @@ function copyToClipboard(text) {
 }
 </script>
 `;
-if (hostName.includes("workers.dev")) {
-return `
+  if (hostName.includes("workers.dev")) {
+    return `
 <br>
 <br>
 ${displayHtml}
@@ -899,7 +1041,7 @@ ${displayHtml}
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h1>Cloudflare-workers/pages-\u0076\u006c\u0065\u0073\u0073代理脚本 V25.5.4</h1>
+            <h1>Cloudflare-workers/pages-\u0076\u006c\u0065\u0073\u0073代理脚本 V25.7.25</h1>
 	    <hr>
             <p>${noteshow}</p>
             <hr>
@@ -918,8 +1060,8 @@ ${displayHtml}
 				<tbody>
 					<tr>
 						<td class="limited-width">关闭了TLS加密，无视域名阻断</td>
-						<td class="limited-width">${w\u0076\u006c\u0065\u0073\u0073ws}</td>
-						<td><button class="btn btn-primary" onclick="copyToClipboard('${w\u0076\u006c\u0065\u0073\u0073ws}')">点击复制链接</button></td>
+						<td class="limited-width">${wvlessws}</td>
+						<td><button class="btn btn-primary" onclick="copyToClipboard('${wvlessws}')">点击复制链接</button></td>
 					</tr>
 				</tbody>
 			</table>
@@ -949,8 +1091,8 @@ ${displayHtml}
 				<tbody>
 					<tr>
 						<td class="limited-width">启用了TLS加密，<br>如果客户端支持分片(Fragment)功能，建议开启，防止域名阻断</td>
-						<td class="limited-width">${p\u0076\u006c\u0065\u0073\u0073wstls}</td>	
-						<td><button class="btn btn-primary" onclick="copyToClipboard('${p\u0076\u006c\u0065\u0073\u0073wstls}')">点击复制链接</button></td>
+						<td class="limited-width">${pvlesswstls}</td>	
+						<td><button class="btn btn-primary" onclick="copyToClipboard('${pvlesswstls}')">点击复制链接</button></td>
 					</tr>
 				</tbody>
 			</table>
@@ -984,7 +1126,7 @@ ${displayHtml}
 					</thead>
 					<tbody>
 						<tr>
-							<td><button class="btn btn-primary" onclick="copyToClipboard('${wk\u0076\u006c\u0065\u0073\u0073share}')">点击复制链接</button></td>
+							<td><button class="btn btn-primary" onclick="copyToClipboard('${wkvlessshare}')">点击复制链接</button></td>
 						</tr>
 					</tbody>
 				</table>
@@ -1048,7 +1190,7 @@ ${displayHtml}
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h1>Cloudflare-workers/pages-\u0076\u006c\u0065\u0073\u0073代理脚本 V25.5.4</h1>
+            <h1>Cloudflare-workers/pages-\u0076\u006c\u0065\u0073\u0073代理脚本 V25.7.25</h1>
 			<hr>
             <p>${noteshow}</p>
             <hr>
@@ -1067,8 +1209,8 @@ ${displayHtml}
 				<tbody>
 					<tr>
 						<td class="limited-width">启用了TLS加密，<br>如果客户端支持分片(Fragment)功能，可开启，防止域名阻断</td>
-						<td class="limited-width">${p\u0076\u006c\u0065\u0073\u0073wstls}</td>
-						<td><button class="btn btn-primary" onclick="copyToClipboard('${p\u0076\u006c\u0065\u0073\u0073wstls}')">点击复制链接</button></td>
+						<td class="limited-width">${pvlesswstls}</td>
+						<td><button class="btn btn-primary" onclick="copyToClipboard('${pvlesswstls}')">点击复制链接</button></td>
 					</tr>
 				</tbody>
 			</table>
@@ -1102,7 +1244,7 @@ ${displayHtml}
 					</thead>
 					<tbody>
 						<tr>
-							<td><button class="btn btn-primary" onclick="copyToClipboard('${pg\u0076\u006c\u0065\u0073\u0073share}')">点击复制链接</button></td>
+							<td><button class="btn btn-primary" onclick="copyToClipboard('${pgvlessshare}')">点击复制链接</button></td>
 						</tr>
 					</tbody>
 				</table>
@@ -1161,12 +1303,14 @@ ${displayHtml}
 }
 
 function gettyConfig(userID, hostName) {
-	const \u0076\u006c\u0065\u0073\u0073share = btoa(`\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP1}:${PT1}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V1_${IP1}_${PT1}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP2}:${PT2}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V2_${IP2}_${PT2}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP3}:${PT3}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V3_${IP3}_${PT3}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP4}:${PT4}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V4_${IP4}_${PT4}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP5}:${PT5}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V5_${IP5}_${PT5}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP6}:${PT6}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V6_${IP6}_${PT6}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP7}:${PT7}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V7_${IP7}_${PT7}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`);
-		return `${\u0076\u006c\u0065\u0073\u0073share}`
-	}
+  const vlessshare = btoa(
+    `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP1}:${PT1}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V1_${IP1}_${PT1}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP2}:${PT2}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V2_${IP2}_${PT2}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP3}:${PT3}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V3_${IP3}_${PT3}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP4}:${PT4}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V4_${IP4}_${PT4}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP5}:${PT5}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V5_${IP5}_${PT5}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP6}:${PT6}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V6_${IP6}_${PT6}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP7}:${PT7}?encryption=none&security=none&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V7_${IP7}_${PT7}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`
+  );
+  return `${vlessshare}`;
+}
 
 function getclConfig(userID, hostName) {
-return `
+  return `
 port: 7890
 allow-lan: true
 mode: rule
@@ -1198,7 +1342,7 @@ dns:
 proxies:
 - name: CF_V1_${IP1}_${PT1}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP1.replace(/[\[\]]/g, '')}
+  server: ${IP1.replace(/[\[\]]/g, "")}
   port: ${PT1}
   uuid: ${userID}
   udp: false
@@ -1211,7 +1355,7 @@ proxies:
 
 - name: CF_V2_${IP2}_${PT2}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP2.replace(/[\[\]]/g, '')}
+  server: ${IP2.replace(/[\[\]]/g, "")}
   port: ${PT2}
   uuid: ${userID}
   udp: false
@@ -1224,7 +1368,7 @@ proxies:
 
 - name: CF_V3_${IP3}_${PT3}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP3.replace(/[\[\]]/g, '')}
+  server: ${IP3.replace(/[\[\]]/g, "")}
   port: ${PT3}
   uuid: ${userID}
   udp: false
@@ -1237,7 +1381,7 @@ proxies:
 
 - name: CF_V4_${IP4}_${PT4}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP4.replace(/[\[\]]/g, '')}
+  server: ${IP4.replace(/[\[\]]/g, "")}
   port: ${PT4}
   uuid: ${userID}
   udp: false
@@ -1250,7 +1394,7 @@ proxies:
 
 - name: CF_V5_${IP5}_${PT5}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP5.replace(/[\[\]]/g, '')}
+  server: ${IP5.replace(/[\[\]]/g, "")}
   port: ${PT5}
   uuid: ${userID}
   udp: false
@@ -1263,7 +1407,7 @@ proxies:
 
 - name: CF_V6_${IP6}_${PT6}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP6.replace(/[\[\]]/g, '')}
+  server: ${IP6.replace(/[\[\]]/g, "")}
   port: ${PT6}
   uuid: ${userID}
   udp: false
@@ -1276,7 +1420,7 @@ proxies:
 
 - name: CF_V7_${IP7}_${PT7}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP7.replace(/[\[\]]/g, '')}
+  server: ${IP7.replace(/[\[\]]/g, "")}
   port: ${PT7}
   uuid: ${userID}
   udp: false
@@ -1290,7 +1434,7 @@ proxies:
 
 - name: CF_V8_${IP8}_${PT8}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP8.replace(/[\[\]]/g, '')}
+  server: ${IP8.replace(/[\[\]]/g, "")}
   port: ${PT8}
   uuid: ${userID}
   udp: false
@@ -1304,7 +1448,7 @@ proxies:
 
 - name: CF_V9_${IP9}_${PT9}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP9.replace(/[\[\]]/g, '')}
+  server: ${IP9.replace(/[\[\]]/g, "")}
   port: ${PT9}
   uuid: ${userID}
   udp: false
@@ -1318,7 +1462,7 @@ proxies:
 
 - name: CF_V10_${IP10}_${PT10}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP10.replace(/[\[\]]/g, '')}
+  server: ${IP10.replace(/[\[\]]/g, "")}
   port: ${PT10}
   uuid: ${userID}
   udp: false
@@ -1332,7 +1476,7 @@ proxies:
 
 - name: CF_V11_${IP11}_${PT11}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP11.replace(/[\[\]]/g, '')}
+  server: ${IP11.replace(/[\[\]]/g, "")}
   port: ${PT11}
   uuid: ${userID}
   udp: false
@@ -1346,7 +1490,7 @@ proxies:
 
 - name: CF_V12_${IP12}_${PT12}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP12.replace(/[\[\]]/g, '')}
+  server: ${IP12.replace(/[\[\]]/g, "")}
   port: ${PT12}
   uuid: ${userID}
   udp: false
@@ -1360,7 +1504,7 @@ proxies:
 
 - name: CF_V13_${IP13}_${PT13}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP13.replace(/[\[\]]/g, '')}
+  server: ${IP13.replace(/[\[\]]/g, "")}
   port: ${PT13}
   uuid: ${userID}
   udp: false
@@ -1435,11 +1579,11 @@ proxy-groups:
 rules:
   - GEOIP,LAN,DIRECT
   - GEOIP,CN,DIRECT
-  - MATCH,🌍选择代理`
+  - MATCH,🌍选择代理`;
 }
-	
+
 function getsbConfig(userID, hostName) {
-return `{
+  return `{
 	  "log": {
 		"disabled": false,
 		"level": "info",
@@ -1932,16 +2076,18 @@ return `{
 		"interval": "30m",
 		"detour": "direct"
 	  }
-	}`
+	}`;
 }
 
 function getptyConfig(userID, hostName) {
-	const \u0076\u006c\u0065\u0073\u0073share = btoa(`\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`);	
-		return `${\u0076\u006c\u0065\u0073\u0073share}`
-	}
-	
+  const vlessshare = btoa(
+    `\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP8}:${PT8}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V8_${IP8}_${PT8}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP9}:${PT9}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V9_${IP9}_${PT9}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP10}:${PT10}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V10_${IP10}_${PT10}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP11}:${PT11}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V11_${IP11}_${PT11}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP12}:${PT12}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V12_${IP12}_${PT12}\n\u0076\u006c\u0065\u0073\u0073\u003A//${userID}\u0040${IP13}:${PT13}?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2560#CF_V13_${IP13}_${PT13}`
+  );
+  return `${vlessshare}`;
+}
+
 function getpclConfig(userID, hostName) {
-return `
+  return `
 port: 7890
 allow-lan: true
 mode: rule
@@ -1973,7 +2119,7 @@ dns:
 proxies:
 - name: CF_V8_${IP8}_${PT8}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP8.replace(/[\[\]]/g, '')}
+  server: ${IP8.replace(/[\[\]]/g, "")}
   port: ${PT8}
   uuid: ${userID}
   udp: false
@@ -1987,7 +2133,7 @@ proxies:
 
 - name: CF_V9_${IP9}_${PT9}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP9.replace(/[\[\]]/g, '')}
+  server: ${IP9.replace(/[\[\]]/g, "")}
   port: ${PT9}
   uuid: ${userID}
   udp: false
@@ -2001,7 +2147,7 @@ proxies:
 
 - name: CF_V10_${IP10}_${PT10}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP10.replace(/[\[\]]/g, '')}
+  server: ${IP10.replace(/[\[\]]/g, "")}
   port: ${PT10}
   uuid: ${userID}
   udp: false
@@ -2015,7 +2161,7 @@ proxies:
 
 - name: CF_V11_${IP11}_${PT11}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP11.replace(/[\[\]]/g, '')}
+  server: ${IP11.replace(/[\[\]]/g, "")}
   port: ${PT11}
   uuid: ${userID}
   udp: false
@@ -2029,7 +2175,7 @@ proxies:
 
 - name: CF_V12_${IP12}_${PT12}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP12.replace(/[\[\]]/g, '')}
+  server: ${IP12.replace(/[\[\]]/g, "")}
   port: ${PT12}
   uuid: ${userID}
   udp: false
@@ -2043,7 +2189,7 @@ proxies:
 
 - name: CF_V13_${IP13}_${PT13}
   type: \u0076\u006c\u0065\u0073\u0073
-  server: ${IP13.replace(/[\[\]]/g, '')}
+  server: ${IP13.replace(/[\[\]]/g, "")}
   port: ${PT13}
   uuid: ${userID}
   udp: false
@@ -2097,11 +2243,11 @@ proxy-groups:
 rules:
   - GEOIP,LAN,DIRECT
   - GEOIP,CN,DIRECT
-  - MATCH,🌍选择代理`
+  - MATCH,🌍选择代理`;
 }
-		
+
 function getpsbConfig(userID, hostName) {
-return `{
+  return `{
 		  "log": {
 			"disabled": false,
 			"level": "info",
@@ -2462,4 +2608,4 @@ return `{
 			"detour": "direct"
 		  }
 		}`;
-} 
+}
